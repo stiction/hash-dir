@@ -1,6 +1,7 @@
+use md5::{Digest, Md5};
 use std::collections::HashMap;
 use std::env;
-use std::fs;
+use std::fs::{self, File};
 use std::io;
 use std::path::{self, Path, PathBuf};
 
@@ -65,4 +66,16 @@ fn visit_dirs(dir: &Path, prefix: &str, cb: &mut dyn FnMut(String, PathBuf)) -> 
         }
     }
     Ok(())
+}
+
+pub fn md5_file<P>(path: P) -> io::Result<String>
+where
+    P: AsRef<Path>,
+{
+    let mut hasher = Md5::new();
+
+    let mut file: fs::File = File::open(path)?;
+    io::copy(&mut file, &mut hasher)?;
+    let hash = hasher.finalize();
+    Ok(hex::encode(hash))
 }
