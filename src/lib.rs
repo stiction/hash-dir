@@ -79,3 +79,14 @@ where
     let hash = hasher.finalize();
     Ok(hex::encode(hash))
 }
+
+pub fn sorted_hash_result(files: &HashMap<String, HashInfo>) -> String {
+    let mut keys: Vec<_> = files.keys().collect();
+    keys.sort();
+    let mut text = String::new();
+    for key in keys.into_iter() {
+        let hash = &files[key].hash;
+        text += &format!("{} {}\n", hash, key);
+    }
+    text
+}
