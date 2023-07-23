@@ -1,8 +1,10 @@
+use rayon::prelude::*;
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use std::process;
+use std::sync::Mutex;
 
 use hash_dir::dir_files;
 use hash_dir::md5_file;
@@ -31,13 +33,24 @@ fn main() {
 
     let count = files.len();
 
-    let mut index = 0usize;
-    files.iter_mut().for_each(|(key, info)| {
+    // let mut index = 0usize;
+    // files.iter_mut().for_each(|(key, info)| {
+    //     let path = &info.path;
+    //     let hash = md5_file(path).unwrap();
+    //     info.hash = hash;
+
+    //     index += 1;
+    //     eprintln!("{}/{} {}", index, count, key);
+    // });
+
+    let index = Mutex::new(0usize);
+    files.par_iter_mut().for_each(|(key, info)| {
         let path = &info.path;
         let hash = md5_file(path).unwrap();
         info.hash = hash;
 
-        index += 1;
+        let mut index = index.lock().unwrap();
+        *index += 1;
         eprintln!("{}/{} {}", index, count, key);
     });
 
